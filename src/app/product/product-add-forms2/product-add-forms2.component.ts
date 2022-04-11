@@ -1,0 +1,53 @@
+import {Component, OnInit} from '@angular/core';
+import {FormBuilder, FormGroup, Validators} from '@angular/forms';
+import {Product} from '../product';
+import {Category} from '../../category/category';
+import {CategoryService} from '../../services/category.service';
+import {ProductService} from '../../services/product.service';
+import {AlertifyService} from '../../services/alertify.service';
+
+@Component({
+  selector: 'app-product-add-forms2',
+  templateUrl: './product-add-forms2.component.html',
+  styleUrls: ['./product-add-forms2.component.css'],
+  providers: [CategoryService, ProductService]
+})
+export class ProductAddForms2Component implements OnInit {
+
+  constructor(private formBuilder: FormBuilder,
+              private categoryService: CategoryService,
+              private productService: ProductService,
+              private alertifyService: AlertifyService) {}
+  productAddForm: FormGroup;
+  // tslint:disable-next-line:new-parens
+  product: Product = new Product;
+  categories: Category [];
+  // tslint:disable-next-line:typedef
+  createProductAddForm() {
+    this.productAddForm = this.formBuilder.group({
+      name: ['', Validators.required],
+      description: ['', Validators.required],
+      imageUrl: ['', Validators.required],
+      price: ['', Validators.required],
+      categoryId: ['', Validators.required]
+    });
+  }
+
+  ngOnInit(): void {
+    this.createProductAddForm();
+    // @ts-ignore
+    this.categoryService.getCategories().subscribe((data: Category[]) => {
+      this.categories = data;
+    });
+  }
+
+  // tslint:disable-next-line:typedef
+  add() {
+    if (this.productAddForm.valid) {
+      this.product = Object.assign({}, this.productAddForm.value);
+    }
+    this.productService.addProduct(this.product).subscribe(data => {
+      this.alertifyService.success(data.name + 'başarıyla eklendi');
+    });
+  }
+}
